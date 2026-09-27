@@ -1,0 +1,79 @@
+{
+  "package_format": "tin-workflow-package-v1",
+  "definition": {
+    "key": "oss.contributor_onboarding_audit",
+    "title": "Audit your contributor onboarding",
+    "description": "Read the connected GitHub repository and audit the contributor onboarding experience across five dimensions — clarity, entry points, setup friction, responsiveness and conversion ask — then produce a prioritized fix list. Report only: nothing is changed, no PRs are opened.",
+    "version": "1.0.0",
+    "executor": "codex.procedure",
+    "schedule_modes": [
+      "on_demand"
+    ],
+    "input_schema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "project_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "focus": {
+          "type": "string",
+          "maxLength": 1000,
+          "default": "",
+          "title": "Areas to focus on (optional)",
+          "description": "e.g. we have no contributors yet, or we want more first-time contributors, or our PRs go unreviewed",
+          "x-tin-ui": {
+            "control": "textarea",
+            "order": 10
+          }
+        },
+        "skip_dimensions": {
+          "type": "string",
+          "maxLength": 200,
+          "default": "",
+          "title": "Dimensions to skip (optional)",
+          "description": "Comma-separated. e.g. conversion_ask,setup_friction if you already know those are fine.",
+          "x-tin-ui": {
+            "control": "text",
+            "order": 20
+          }
+        }
+      },
+      "required": [
+        "project_id"
+      ]
+    },
+    "integration_requirements": [
+      {
+        "provider_key": "infra.github",
+        "capabilities": [
+          "contents.read"
+        ],
+        "required": true
+      }
+    ],
+    "procedure": {
+      "prompt_path": "PROMPT.md",
+      "skills_path": "skills",
+      "skill_files": [
+        "skills/contributor-onboarding/SKILL.md"
+      ],
+      "entry_skill": "contributor-onboarding",
+      "workspace": {
+        "kind": "project.state"
+      },
+      "sandbox": {
+        "profile": "isolated",
+        "egress": "fenced",
+        "timeout_seconds": 900
+      },
+      "output": {
+        "kind": "project.artifact",
+        "path": "reports/OSS_CONTRIBUTOR_AUDIT.md",
+        "media_type": "text/markdown",
+        "max_bytes": 250000
+      }
+    }
+  }
+}
